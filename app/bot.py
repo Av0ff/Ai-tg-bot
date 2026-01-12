@@ -3,24 +3,14 @@ import logging
 import os
 from dotenv import load_dotenv
 
-from aiogram import Bot, Dispatcher, F, Router
-from aiogram.filters import CommandStart
-from aiogram.types import Message
+from aiogram import Bot, Dispatcher
+
+from app.handlers.start import router as start_router
+from app.handlers.messages import router as messages_router
+from app.handlers.callbacks import router as callback_router
+
 
 load_dotenv()
-router = Router()
-
-
-@router.message(CommandStart())
-async def start_handler(message: Message) -> None:
-    await message.answer(
-        "Привет! Я бот на aiogram v3. Напиши сообщение, и я отвечу."
-    )
-
-
-@router.message(F.text)
-async def echo_handler(message: Message) -> None:
-    await message.answer(message.text)
 
 
 async def main() -> None:
@@ -39,7 +29,9 @@ async def main() -> None:
 
     bot = Bot(token=token)
     dp = Dispatcher()
-    dp.include_router(router)
+    dp.include_router(start_router)
+    dp.include_router(messages_router)
+    dp.include_router(callback_router)
 
     await dp.start_polling(bot)
 
