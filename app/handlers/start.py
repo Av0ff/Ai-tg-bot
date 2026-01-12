@@ -9,5 +9,6 @@ router = Router()
 @router.message(CommandStart())
 async def start_handler(message: Message) -> None:
     await message.answer(
-        "Hi! I am an aiogram v3 bot. Send a message and I will reply."
+        "Hi! I am the stationery store assistant. Ask about orders, delivery, "
+        "returns, or product availability."
     )
