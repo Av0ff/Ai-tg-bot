@@ -12,6 +12,7 @@ from app.services.triage import needs_agent
 
 router = Router()
 logger = logging.getLogger(__name__)
+last_ticket_message_id = {}
 
 
 def build_ticket_keyboard():
@@ -23,7 +24,7 @@ def build_ticket_keyboard():
 
 
 @router.message(F.text)
-async def echo_handler(message: Message) -> None:
+async def gpt_reply_handler(message: Message) -> None:
     user_text = message.text
     if not user_text:
         await message.answer("Please send a text message.")
@@ -80,4 +81,21 @@ async def echo_handler(message: Message) -> None:
         )
         reply_text = f"{reply_text}\n\nStatus: needs a specialist."
 
-    await message.answer(reply_text, reply_markup=build_ticket_keyboard())
+    chat_id = message.chat.id
+    previous_message_id = last_ticket_message_id.get(chat_id)
+    if previous_message_id:
+        try:
+            await message.bot.edit_message_reply_markup(
+                chat_id=chat_id,
+                message_id=previous_message_id,
+                reply_markup=None,
+            )
+        except Exception:
+            logger.info(
+                "Failed to clear previous ticket keyboard: chat_id=%s message_id=%s",
+                chat_id,
+                previous_message_id,
+            )
+
+    sent = await message.answer(reply_text, reply_markup=build_ticket_keyboard())
+    last_ticket_message_id[chat_id] = sent.message_id
