@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 
 from aiogram import Bot, Dispatcher
 
+from app.db import init_db
 from app.handlers.start import router as start_router
 from app.handlers.messages import router as messages_router
 from app.handlers.callbacks import router as callback_router
@@ -33,6 +34,7 @@ async def main() -> None:
     dp.include_router(messages_router)
     dp.include_router(callback_router)
 
+    await init_db()
     await dp.start_polling(bot)
 
 
