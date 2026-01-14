@@ -9,7 +9,13 @@ FAQ topics included:
 - Bulk discounts
 - Company invoices
 
-## Install and run
+## Requirements
+
+- Python 3.10+
+- OpenAI API key
+- Telegram bot token
+
+## Install and run (Windows PowerShell)
 
 1) Clone the repo and go to the project folder.
 2) Create a virtual environment and install dependencies:
@@ -30,4 +36,26 @@ FAQ topics included:
    python -m app.bot
    ```
 
+## Install and run (Linux/macOS)
+
+1) Clone the repo and go to the project folder.
+2) Create a virtual environment and install dependencies:
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate
+   pip install -r requirements.txt
+   ```
+3) Create a `.env` file in the project root with:
+   ```
+   BOT_TOKEN=your_telegram_bot_token
+   OPENAI_API_KEY=your_openai_api_key
+   # optional
+   OPENAI_MODEL=gpt-4o-mini
+   ```
+4) Run the bot:
+   ```bash
+   python -m app.bot
+   ```
+
 The SQLite database file (`app.db`) will be created automatically in the project root.
+Logs are written to `bot.log` in the project root.
