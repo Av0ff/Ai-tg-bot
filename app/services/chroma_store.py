@@ -47,17 +47,23 @@ class ChromaStore:
             os.makedirs(self._path, exist_ok=True)
             self._client = chromadb.PersistentClient(
                 path=self._path,
-                settings=Settings(allow_reset=True),
+                settings=Settings(
+                    allow_reset=True,
+                    anonymized_telemetry=False,
+                    chroma_product_telemetry_impl=(
+                        "app.services.chroma_telemetry.NoopTelemetry"
+                    ),
+                    chroma_telemetry_impl=(
+                        "app.services.chroma_telemetry.NoopTelemetry"
+                    ),
+                ),
             )
         return self._client
 
     def _ensure_collection_sync(self, drop_existing: bool = False) -> None:
         client = self._get_client()
         if drop_existing:
-            try:
-                client.delete_collection(self._collection_name)
-            except Exception:
-                pass
+            client.reset()
         client.get_or_create_collection(
             self._collection_name,
             metadata={"hnsw:space": "cosine"},
@@ -94,7 +100,7 @@ class ChromaStore:
         results = collection.query(
             query_embeddings=[embedding],
             n_results=top_k,
-            include=["documents", "metadatas", "distances", "ids"],
+            include=["documents", "metadatas", "distances"],
         )
         hits: List[Dict[str, object]] = []
         ids = results.get("ids", [[]])[0]

@@ -1,12 +1,17 @@
 import argparse
 import asyncio
 
+from dotenv import load_dotenv
+
 from app.services.ingest import (
     default_docs_dir,
     default_pairs_path,
     index_pairs,
     parse_documents,
 )
+
+
+load_dotenv()
 
 
 async def run(args: argparse.Namespace) -> None:

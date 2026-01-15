@@ -1,9 +1,14 @@
+MARKER = "[[NEEDS_SPECIALIST]]"
+
+
 def needs_agent(answer: str) -> bool:
-    markers = [
-        "not sure",
-        "need a specialist",
-        "needs a specialist",
-        "can't help",
-        "cannot help",
+    return MARKER.lower() in answer.lower()
+
+
+def strip_agent_marker(answer: str) -> str:
+    if not answer:
+        return answer
+    cleaned_lines = [
+        line for line in answer.splitlines() if MARKER.lower() not in line.lower()
     ]
-    return any(m in answer.lower() for m in markers)
+    return "\n".join(cleaned_lines).strip()

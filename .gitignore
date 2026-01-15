@@ -38,3 +38,4 @@ htmlcov/
 # Local data
 *.sqlite3
 *.db
+data/chroma/

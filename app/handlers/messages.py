@@ -14,14 +14,17 @@ from app.db import (
     update_ticket_status,
 )
 from app.services.faq_prompt import build_system_prompt
+from app.services.chroma_store import ChromaStore
+from app.services.embedding_client import EmbeddingClient
 from app.services.gpt_client import GPTClient
-from app.services.triage import needs_agent
+from app.services.triage import needs_agent, strip_agent_marker
 
 
 router = Router()
 logger = logging.getLogger(__name__)
 last_ticket_message_id = {}
 CONTEXT_MESSAGE_LIMIT = 20
+RAG_RESULT_LIMIT = 5
 
 
 def build_ticket_keyboard(ticket_id: int):
@@ -46,6 +49,31 @@ def build_context_text(messages) -> str:
             role = "System"
         lines.append(f"{role}: {item.content}")
     return "\n".join(lines)
+
+def build_rag_query(user_text: str, history) -> str:
+    parts = []
+    for item in history:
+        if item.role == "user":
+            parts.append(item.content)
+    parts.append(user_text)
+    return "\n".join([part for part in parts if part])
+
+
+async def build_rag_context(rag_query: str) -> str:
+    embedder = EmbeddingClient()
+    store = ChromaStore()
+    embedding = (await embedder.embed([rag_query]))[0]
+    hits = await store.search(embedding, top_k=RAG_RESULT_LIMIT)
+    if not hits:
+        return ""
+    lines = []
+    for hit in hits:
+        text = hit.get("text") or ""
+        source = hit.get("source") or "unknown"
+        if not text:
+            continue
+        lines.append(f"Source: {source}\n{text}")
+    return "\n\n".join(lines)
 
 @router.message(F.text)
 async def gpt_reply_handler(message: Message) -> None:
@@ -84,11 +112,18 @@ async def gpt_reply_handler(message: Message) -> None:
 
         start_time = time.monotonic()
         client = GPTClient()
-        system_prompt = build_system_prompt()
+        rag_query = build_rag_query(user_text, history)
+        rag_context = await build_rag_context(rag_query)
+        prompt_blocks = [build_system_prompt()]
         if context_text:
-            system_prompt = (
-                f"{system_prompt}\n\nConversation history:\n{context_text}"
+            prompt_blocks.append(
+                f"Conversation history:\n{context_text}"
             )
+        if rag_context:
+            prompt_blocks.append(
+                f"Relevant context:\n{rag_context}"
+            )
+        system_prompt = "\n\n".join(prompt_blocks)
         reply_text, meta = await client.chat(
             user_text=user_text,
             system_prompt=system_prompt,
@@ -120,6 +155,7 @@ async def gpt_reply_handler(message: Message) -> None:
     )
 
     needs_specialist = needs_agent(reply_text)
+    reply_text = strip_agent_marker(reply_text)
     if needs_specialist:
         logger.warning(
             "Triage: needs specialist: user_id=%s message_id=%s",

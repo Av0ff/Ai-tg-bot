@@ -1,23 +1,24 @@
-FAQ_TEXT = """
-Q: What are your delivery options?
-A: We offer standard delivery (2-5 business days) and express delivery (1-2 business days).
-Q: How can I check my order status?
-A: Send your order number, and we will look it up for you.
-Q: What is your return policy?
-A: Returns are accepted within 14 days if items are unused and in original packaging.
-Q: Do you have bulk discounts for office supplies?
-A: Yes, we offer bulk pricing on many items. Tell us the product and quantity.
-Q: Can I get an invoice for my company?
-A: Yes, we can issue invoices. Please provide your company details.
-""".strip()
+from app.services.assistant_profile import load_assistant_profile
+
 
 def build_system_prompt() -> str:
+    profile = load_assistant_profile()
     return (
-        "You are a customer support assistant for a stationery online store. "
-        "Answer briefly and to the point using the FAQ when possible. "
-        "If you are not confident, say that a specialist is needed.\n\n"
-        "Use one of these phrases when you are not confident: "
-        "\"not sure\", \"need a specialist\", \"needs a specialist\", "
-        "\"can't help\", \"cannot help\".\n\n"
-        f"FAQ:\n{FAQ_TEXT}"
+        f"{profile}\n\n"
+        "Use the conversation history and the provided context to answer. "
+        "Do not assume the current question is in-scope just because earlier messages were. "
+        "Evaluate the current user question on its own.\n\n"
+        "If you can give a reasonable answer (even partial or general), do so and "
+        "do NOT include the marker.\n\n"
+        "Only add the marker if you truly cannot answer, for example:\n"
+        "- The question is outside the domain of this assistant.\n"
+        "- The context/history does not contain the required information and you "
+        "cannot provide a safe generic answer.\n"
+        "- The user message is nonsensical or too ambiguous even after asking a "
+        "clarifying question.\n\n"
+        "If the question is clearly outside the domain or unrelated to the provided "
+        "context, you must add the marker even if you give a brief refusal or guidance.\n\n"
+        "When you must escalate, first write a brief reply or clarifying question, "
+        "then add a new line with exactly: [[NEEDS_SPECIALIST]]. "
+        "Do not mention this token to the user."
     )

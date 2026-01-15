@@ -1,0 +1,44 @@
+Bash (Git Bash) snippets
+
+1) SQLite tickets + message history
+
+python - <<'PY'
+import sqlite3
+
+conn = sqlite3.connect("app.db")
+cur = conn.cursor()
+
+print("Tickets:")
+for row in cur.execute(
+    "SELECT id, user_id, status, created_at, updated_at "
+    "FROM tickets ORDER BY id DESC LIMIT 10"
+):
+    print(row)
+
+print("\nMessages:")
+for row in cur.execute(
+    "SELECT id, ticket_id, role, substr(content, 1, 120), created_at "
+    "FROM ticket_messages ORDER BY id DESC LIMIT 20"
+):
+    print(row)
+
+conn.close()
+PY
+
+2) Chroma contents (no embeddings)
+
+python - <<'PY'
+from app.services.chroma_store import ChromaStore
+
+store = ChromaStore()
+client = store._get_client()
+collection = client.get_or_create_collection(
+    "faq_chunks",
+    metadata={"hnsw:space": "cosine"},
+)
+
+res = collection.get(limit=5, include=["documents", "metadatas"])
+print("count:", collection.count())
+print("documents:", res.get("documents"))
+print("metadatas:", res.get("metadatas"))
+PY

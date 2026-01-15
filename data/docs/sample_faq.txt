@@ -1,0 +1,51 @@
+Here is a short FAQ draft for a stationery store.
+Question - What are your delivery options?
+Answer: We ship standard (2-5 business days) and express (1-2 business days).
+
+Question - Can I get an invoice for my company?
+Answer: Yes, provide your company details and we will issue an invoice.
+
+Question - Do you offer bulk discounts?
+Answer: We offer bulk pricing for large orders. Tell us the product and quantity.
+
+Question - What payment methods are accepted?
+Answer: We accept card payments and bank transfers.
+
+Question - Can I track my order?
+Answer: Yes, send your order number and we will check the status.
+
+Question - What is your return policy?
+Answer: Returns are accepted within 14 days if items are unused and in original packaging.
+
+Question - Do you ship internationally?
+Answer: Currently we ship only within the country.
+
+Question - Can I cancel or change my order?
+Answer: Contact support within 2 hours after purchase to request changes.
+
+Question - Do you sell recycled paper products?
+Answer: Yes, we have recycled notebooks and printer paper in stock.
+
+Question - What are your business hours?
+Answer: Support is available Monday to Friday, 9 AM to 6 PM.
+
+Question - Do you provide samples for corporate clients?
+Answer: Samples are available for bulk orders on request.
+
+Question - How do I apply a discount code?
+Answer: Enter the code at checkout before completing payment.
+
+Question - Can you bundle items into a single shipment?
+Answer: Yes, we consolidate items when possible to reduce shipping costs.
+
+Question - Do you offer gift wrapping?
+Answer: Gift wrapping is available for an additional fee.
+
+Question - Are there minimum order amounts for wholesale?
+Answer: Yes, wholesale orders require a minimum quantity per item.
+
+Question - How do I request a refund?
+Answer: Contact support with your order number and reason for return.
+
+Extra notes: Our support team is available Monday to Friday, 9 AM to 6 PM.
+This line is not a question or answer and should be ignored by normalization.
