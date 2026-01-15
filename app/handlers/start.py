@@ -11,6 +11,4 @@ router = Router()
 @router.message(CommandStart())
 async def start_handler(message: Message) -> None:
     profile = load_assistant_profile()
-    await message.answer(
-        f"Hi! {profile}"
-    )
+    await message.answer(profile)
