@@ -64,6 +64,11 @@ async def build_rag_context(rag_query: str) -> str:
     store = ChromaStore()
     embedding = (await embedder.embed([rag_query]))[0]
     hits = await store.search(embedding, top_k=RAG_RESULT_LIMIT)
+    logger.info(
+        "RAG retrieval completed: hits=%s query_len=%s",
+        len(hits),
+        len(rag_query),
+    )
     if not hits:
         return ""
     lines = []
@@ -209,4 +214,10 @@ async def gpt_reply_handler(message: Message) -> None:
     if not needs_specialist:
         reply_markup = build_ticket_keyboard(ticket_id)
     sent = await message.answer(reply_text, reply_markup=reply_markup)
+    logger.info(
+        "Reply sent: chat_id=%s message_id=%s needs_specialist=%s",
+        chat_id,
+        sent.message_id,
+        needs_specialist,
+    )
     last_ticket_message_id[chat_id] = sent.message_id

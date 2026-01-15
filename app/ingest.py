@@ -1,5 +1,6 @@
 import argparse
 import asyncio
+import logging
 
 from dotenv import load_dotenv
 
@@ -39,6 +40,11 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main() -> None:
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
+        handlers=[logging.StreamHandler()],
+    )
     parser = build_parser()
     args = parser.parse_args()
     asyncio.run(run(args))

@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 from dataclasses import dataclass
 from typing import Dict, Iterable, List
@@ -7,6 +8,9 @@ from app.services.chroma_store import ChromaStore, ChunkRecord
 from app.services.doc_parser import load_documents_from_dir
 from app.services.embedding_client import EmbeddingClient
 from app.services.qa_normalizer import QAPair, normalize_text_to_pairs
+
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -27,12 +31,20 @@ async def parse_documents(
     docs_dir: str,
     output_path: str,
 ) -> List[ParsedQA]:
+    logger.info("Parsing documents: dir=%s", docs_dir)
     documents = load_documents_from_dir(docs_dir)
+    logger.info("Found documents: count=%s", len(documents))
     results: List[ParsedQA] = []
     for doc in documents:
         pairs = await normalize_text_to_pairs(doc.text)
         results.append(ParsedQA(source=doc.source, pairs=pairs))
+        logger.info(
+            "Normalized document: source=%s pairs=%s",
+            doc.source,
+            len(pairs),
+        )
     _write_pairs_json(results, output_path)
+    logger.info("Saved Q/A pairs: path=%s", output_path)
     return results
 
 
@@ -40,7 +52,9 @@ async def index_pairs(
     pairs_path: str,
     reset: bool = False,
 ) -> int:
+    logger.info("Indexing pairs: path=%s reset=%s", pairs_path, reset)
     parsed = _load_pairs_json(pairs_path)
+    logger.info("Loaded sources: count=%s", len(parsed))
     store = ChromaStore()
     await store.ensure_collection(drop_existing=reset)
     embedder = EmbeddingClient()
@@ -58,6 +72,7 @@ async def index_pairs(
                 sources = []
     if texts:
         total += await _flush_batch(store, embedder, texts, sources)
+    logger.info("Indexed chunks: total=%s", total)
     return total
 
 

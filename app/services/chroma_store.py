@@ -1,5 +1,7 @@
 import asyncio
+import logging
 import os
+import shutil
 import uuid
 from dataclasses import dataclass
 from typing import Dict, Iterable, List, Optional
@@ -7,6 +9,9 @@ from typing import Dict, Iterable, List, Optional
 import chromadb
 from chromadb.config import Settings
 from chromadb.api import ClientAPI
+
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -61,9 +66,9 @@ class ChromaStore:
         return self._client
 
     def _ensure_collection_sync(self, drop_existing: bool = False) -> None:
-        client = self._get_client()
         if drop_existing:
-            client.reset()
+            self._hard_reset_persist_dir()
+        client = self._get_client()
         client.get_or_create_collection(
             self._collection_name,
             metadata={"hnsw:space": "cosine"},
@@ -117,3 +122,28 @@ class ChromaStore:
                 }
             )
         return hits
+
+    def _hard_reset_persist_dir(self) -> None:
+        if self._client is not None:
+            try:
+                self._client.reset()
+            except Exception:
+                logger.exception("Chroma reset failed before hard reset")
+            self._client = None
+        if os.path.isdir(self._path):
+            try:
+                shutil.rmtree(self._path)
+                logger.info("Removed Chroma directory: path=%s", self._path)
+                return
+            except Exception as exc:
+                logger.warning(
+                    "Failed to delete Chroma directory: path=%s error=%s",
+                    self._path,
+                    exc,
+                )
+        try:
+            client = self._get_client()
+            client.reset()
+            logger.info("Fallback reset completed: path=%s", self._path)
+        except Exception:
+            logger.exception("Fallback Chroma reset failed")
