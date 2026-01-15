@@ -6,6 +6,7 @@ from typing import Dict, Iterable, List, Optional
 
 import chromadb
 from chromadb.config import Settings
+from chromadb.api import ClientAPI
 
 
 @dataclass(frozen=True)
@@ -26,7 +27,7 @@ class ChromaStore:
         self._collection_name = collection_name or os.getenv(
             "CHROMA_COLLECTION", "faq_chunks"
         )
-        self._client = None
+        self._client: Optional[ClientAPI] = None
 
     async def ensure_collection(self, drop_existing: bool = False) -> None:
         await asyncio.to_thread(self._ensure_collection_sync, drop_existing)
@@ -41,7 +42,7 @@ class ChromaStore:
     ) -> List[Dict[str, object]]:
         return await asyncio.to_thread(self._search_sync, embedding, top_k)
 
-    def _get_client(self) -> chromadb.PersistentClient:
+    def _get_client(self) -> ClientAPI:
         if self._client is None:
             os.makedirs(self._path, exist_ok=True)
             self._client = chromadb.PersistentClient(
